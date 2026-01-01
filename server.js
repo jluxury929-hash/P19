@@ -3,7 +3,7 @@
 // ===============================================================================
 // MERGE: v28.6 (QUANTUM EXECUTION) + v26.5 (GEMINI AI OPTIMIZER)
 // DNA: ENTROPY ID INJECTION + SOVEREIGN NONCE MGMT + LIVE AI RECALIBRATION
-// TARGET BENEFICIARY: 0x4B8251e7c80F910305bb81547e301DcB8A596918
+// TARGET BENEFICIARY: 0x35c3ECfFBBDd942a8DbA7587424b58f74D6D6D15
 // ===============================================================================
 
 const cluster = require('cluster');
