@@ -42,7 +42,7 @@ const GLOBAL_CONFIG = {
     BENEFICIARY: process.env.BENEFICIARY || "0xYOUR_OWN_PUBLIC_WALLET_ADDRESS",
     
     // STRATEGY SETTINGS
-    WHALE_THRESHOLD: parseEther("15.0"), 
+    WHALE_THRESHOLD: parseEther("1.0"), 
     MIN_LOG_ETH: parseEther("10.0"),      
     GAS_LIMIT: 1250000n,                 
     MIN_NET_PROFIT: "0.01",              
