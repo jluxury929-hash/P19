@@ -1,8 +1,8 @@
 // ===============================================================================
-// APEX ULTIMATE OMNISCIENT SNIPER v26.5 (ULTIMATE MERGE) - SELF-HEALING AI
+// APEX ULTIMATE MASTER v29.0 (QUANTUM SINGULARITY) - AI SELF-HEALING ENGINE
 // ===============================================================================
-// INTEGRATED: GEMINI 2.5 FLASH AUTO-OPTIMIZER + DYNAMIC RECOVERY DNA
-// STRATEGY: OMNISCIENT SNIPE + TRIANGLE + POOL-DEPTH SCALING (10% RULE)
+// MERGE: v28.6 (QUANTUM EXECUTION) + v26.5 (GEMINI AI OPTIMIZER)
+// DNA: ENTROPY ID INJECTION + SOVEREIGN NONCE MGMT + LIVE AI RECALIBRATION
 // TARGET BENEFICIARY: 0x4B8251e7c80F910305bb81547e301DcB8A596918
 // ===============================================================================
 
@@ -18,13 +18,6 @@ const apiKey = ""; // Environment provided
 const GEMINI_MODEL = "gemini-2.5-flash-preview-09-2025";
 let lastAiCorrection = Date.now();
 
-// --- SAFETY: GLOBAL ERROR HANDLERS ---
-process.on('uncaughtException', (err) => {
-    const msg = err.message || "";
-    if (msg.includes('200') || msg.includes('429') || msg.includes('network') || msg.includes('insufficient funds')) return;
-    console.error("\n\x1b[31m[CRITICAL ERROR]\x1b[0m", msg);
-});
-
 // --- THEME ENGINE ---
 const TXT = {
     reset: "\x1b[0m", bold: "\x1b[1m", dim: "\x1b[2m",
@@ -33,21 +26,19 @@ const TXT = {
     gold: "\x1b[38;5;220m", gray: "\x1b[90m"
 };
 
+// --- GLOBAL CONFIGURATION ---
 const GLOBAL_CONFIG = {
     TARGET_CONTRACT: process.env.TARGET_CONTRACT || "0x83EF5c401fAa5B9674BAfAcFb089b30bAc67C9A0", 
     BENEFICIARY: process.env.BENEFICIARY || "0x4B8251e7c80F910305bb81547e301DcB8A596918",
-    
-    // ASSETS
     WETH: "0x4200000000000000000000000000000000000006",
     USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    WETH_USDC_POOL: "0x88A43bb75941904d47401946215162a26bc773dc",
 
-    // AI TUNABLE PARAMETERS (Gemini will adjust these)
+    // AI TUNABLE PARAMETERS (Gemini will adjust these live)
     TUNABLES: {
-        WHALE_THRESHOLD: 1.0, 
-        MARGIN_ETH: 0.008,
-        PRIORITY_BRIBE: 25,
-        GAS_SAFETY_MULT: 1.2
+        WHALE_THRESHOLD: 0.25, 
+        MARGIN_ETH: 0.0015,   
+        PRIORITY_BRIBE: 180,  
+        GAS_BUFFER_MULT: 1.65 
     },
 
     RPC_POOL: [
@@ -55,19 +46,20 @@ const GLOBAL_CONFIG = {
         "https://1rpc.io/eth",
         "https://rpc.flashbots.net",
         "https://base.llamarpc.com",
-        "https://mainnet.base.org"
+        "https://mainnet.base.org",
+        "https://base.merkle.io",
+        "https://1rpc.io/base"
     ]
 };
 
 // --- AI SELF-HEALING ENGINE ---
 async function askAiForOptimization(errorContext) {
-    if (Date.now() - lastAiCorrection < 60000) return; // Limit AI calls to 1/min
+    if (Date.now() - lastAiCorrection < 45000) return; // Limit AI calls to 45s
     
-    const prompt = `You are a high-frequency trading bot optimizer. 
-    Current tunables: ${JSON.stringify(GLOBAL_CONFIG.TUNABLES)}.
-    Recent Error: ${errorContext}.
-    Provide a JSON object with updated values for WHALE_THRESHOLD, MARGIN_ETH, PRIORITY_BRIBE, and GAS_SAFETY_MULT to ensure transactions land successfully. 
-    Be aggressive but protect capital.`;
+    const prompt = `Act as an MEV optimization engine. Current settings: ${JSON.stringify(GLOBAL_CONFIG.TUNABLES)}. 
+    Failure context: ${errorContext}.
+    Return a JSON object with updated values for WHALE_THRESHOLD, MARGIN_ETH, PRIORITY_BRIBE (max 250), and GAS_BUFFER_MULT (max 2.0).
+    Goal: Force transactions into the next block while maintaining profit.`;
 
     try {
         const res = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
@@ -76,38 +68,55 @@ async function askAiForOptimization(errorContext) {
         });
         const suggestion = JSON.parse(res.data.candidates[0].content.parts[0].text);
         Object.assign(GLOBAL_CONFIG.TUNABLES, suggestion);
-        console.log(`${TXT.gold}[AI OPTIMIZER] Internal parameters recalibrated by Gemini.${TXT.reset}`);
+        console.log(`${TXT.gold}[AI OPTIMIZER] Parameters recalibrated for current network state.${TXT.reset}`);
         lastAiCorrection = Date.now();
-    } catch (e) { /* Silent fail for AI */ }
+    } catch (e) { /* AI fail-safe */ }
 }
 
-// --- MASTER PROCESS ---
+// --- MASTER PROCESS (Sovereign Orchestrator) ---
 if (cluster.isPrimary) {
     console.clear();
     console.log(`${TXT.bold}${TXT.gold}╔════════════════════════════════════════════════════════╗${TXT.reset}`);
-    console.log(`${TXT.bold}${TXT.gold}║   ⚡ APEX MASTER v26.5 | AI SELF-HEALING CLUSTER     ║${TXT.reset}`);
-    console.log(`${TXT.bold}${TXT.gold}║   DNA: GEMINI 2.5 FLASH LIVE AUTO-OPTIMIZATION       ║${TXT.reset}`);
+    console.log(`${TXT.bold}${TXT.gold}║   ⚡ APEX MASTER v29.0 | QUANTUM SINGULARITY       ║${TXT.reset}`);
+    console.log(`${TXT.bold}${TXT.gold}║   DNA: GEMINI AI + ENTROPY SATURATION + SOVEREIGN   ║${TXT.reset}`);
     console.log(`${TXT.bold}${TXT.gold}╚════════════════════════════════════════════════════════╝${TXT.reset}\n`);
 
-    for (let i = 0; i < Math.min(os.cpus().length, 32); i++) cluster.fork();
+    let sovereignNonce = -1;
+    let sovereignBlock = 0;
 
-    cluster.on('exit', () => setTimeout(() => cluster.fork(), 2000));
+    const cpuCount = Math.min(os.cpus().length, 32);
+    for (let i = 0; i < cpuCount; i++) {
+        const worker = cluster.fork();
+        worker.on('message', (msg) => {
+            if (msg.type === 'SYNC_RESERVE') {
+                if (sovereignNonce === -1 || msg.nonce > sovereignNonce) sovereignNonce = msg.nonce;
+                worker.send({ type: 'SYNC_GRANT', nonce: sovereignNonce, block: sovereignBlock });
+                sovereignNonce++;
+            }
+            if (msg.type === 'BLOCK_TICK') sovereignBlock = msg.block;
+            if (msg.type === 'AI_RECALIBRATE') {
+                sovereignNonce = msg.nonce;
+                console.log(`${TXT.yellow}[MASTER] Nonce Reset by AI Diagnosis: ${sovereignNonce}${TXT.reset}`);
+            }
+        });
+    }
+
+    cluster.on('exit', () => setTimeout(() => cluster.fork(), 1500));
 } 
-// --- WORKER PROCESS ---
+// --- WORKER PROCESS (Quantum Execution Unit) ---
 else {
     const networkIndex = (cluster.worker.id - 1) % 3;
     const NETWORKS = [
-        { name: "ETH_MAINNET", chainId: 1, rpc: process.env.ETH_RPC || "https://eth.llamarpc.com", wss: process.env.ETH_WSS || "wss://ethereum-rpc.publicnode.com", type: "FLASHBOTS", relay: "https://relay.flashbots.net", router: "0xE592427A0AEce92De3Edee1F18E0157C05861564", color: TXT.cyan },
-        { name: "ARBITRUM", chainId: 42161, rpc: process.env.ARB_RPC || "https://arb1.arbitrum.io/rpc", wss: process.env.ARB_WSS || "wss://arb1.arbitrum.io/feed", router: "0xE592427A0AEce92De3Edee1F18E0157C05861564", color: TXT.blue },
-        { name: "BASE_MAINNET", chainId: 8453, rpc: process.env.BASE_RPC || "https://mainnet.base.org", wss: process.env.BASE_WSS || "wss://base-rpc.publicnode.com", privateRpc: "https://base.merkle.io", router: "0x2626664c2603336E57B271c5C0b26F421741e481", color: TXT.magenta, gasOracle: "0x420000000000000000000000000000000000000F" }
+        { name: "ETH_MAINNET", chainId: 1, rpc: "https://eth.llamarpc.com", wss: "wss://ethereum-rpc.publicnode.com", router: "0xE592427A0AEce92De3Edee1F18E0157C05861564", color: TXT.cyan },
+        { name: "ARBITRUM", chainId: 42161, rpc: "https://arb1.arbitrum.io/rpc", wss: "wss://arb1.arbitrum.io/feed", router: "0xE592427A0AEce92De3Edee1F18E0157C05861564", color: TXT.blue },
+        { name: "BASE_MAINNET", chainId: 8453, rpc: "https://mainnet.base.org", wss: "wss://base-rpc.publicnode.com", privateRpc: "https://base.merkle.io", router: "0x2626664c2603336E57B271c5C0b26F421741e481", color: TXT.magenta, gasOracle: "0x420000000000000000000000000000000000000F" }
     ];
     initWorker(NETWORKS[networkIndex]);
 }
 
 async function initWorker(CHAIN) {
     const TAG = `${CHAIN.color}[${CHAIN.name}]${TXT.reset}`;
-    let currentEthPrice = 0;
-
+    
     const rawKey = process.env.TREASURY_PRIVATE_KEY || process.env.PRIVATE_KEY || "";
     if (!rawKey) return;
     const walletKey = rawKey.trim();
@@ -117,101 +126,138 @@ async function initWorker(CHAIN) {
             const network = ethers.Network.from(CHAIN.chainId);
             const rpcConfigs = [CHAIN.rpc, ...GLOBAL_CONFIG.RPC_POOL].map((url, i) => ({
                 provider: new JsonRpcProvider(url, network, { staticNetwork: true }),
-                priority: i + 1, stallTimeout: 1500
+                priority: i + 1, stallTimeout: 400
             }));
             const provider = new FallbackProvider(rpcConfigs, network, { quorum: 1 });
             const wsProvider = new WebSocketProvider(CHAIN.wss, network);
             const wallet = new Wallet(walletKey, provider);
-
-            const priceFeed = CHAIN.chainId === 1 ? new Contract("0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", ["function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"], provider) : null;
-            const gasOracle = CHAIN.gasOracle ? new Contract(CHAIN.gasOracle, ["function getL1Fee(bytes memory _data) public view returns (uint256)"], provider) : null;
-
-            if (priceFeed) {
-                const update = async () => { try { const [, p] = await priceFeed.latestRoundData(); currentEthPrice = Number(p) / 1e8; } catch(e){} };
-                await update(); setInterval(update, 20000);
-            }
-
-            console.log(`${TXT.green}✅ CORE ACTIVE on ${TAG}${TXT.reset}`);
-
             const titanIface = new Interface([
                 "function requestTitanLoan(address _token, uint256 _amount, address[] calldata _path)",
                 "function executeTriangle(address[] path, uint256 amount)"
             ]);
 
+            console.log(`${TXT.green}✅ CORE ONLINE: ${TAG}${TXT.reset}`);
+
+            wsProvider.on("block", (bn) => process.send({ type: 'BLOCK_TICK', block: bn }));
+
             wsProvider.on("pending", async (txHash) => {
-                try {
-                    const tx = await provider.getTransaction(txHash).catch(() => null);
-                    if (!tx || !tx.to) return;
-                    const val = tx.value || 0n;
-                    if (val >= parseEther(GLOBAL_CONFIG.TUNABLES.WHALE_THRESHOLD.toString()) && tx.to.toLowerCase() === CHAIN.router.toLowerCase()) {
-                        await attemptStrike(provider, wallet, titanIface, gasOracle, CHAIN, "WHALE");
-                    }
-                } catch (err) {}
+                setImmediate(async () => {
+                    try {
+                        let tx = null;
+                        for (let i = 0; i < 5; i++) {
+                            tx = await provider.getTransaction(txHash).catch(() => null);
+                            if (tx) break;
+                            await new Promise(r => setTimeout(r, 2)); 
+                        }
+                        if (!tx || !tx.to) return;
+                        
+                        const val = tx.value || 0n;
+                        if (val >= parseEther(GLOBAL_CONFIG.TUNABLES.WHALE_THRESHOLD.toString()) && 
+                            tx.to.toLowerCase() === CHAIN.router.toLowerCase()) {
+                            
+                            console.log(`\n${TAG} ${TXT.magenta}🚨 WHALE TRIGGER: ${formatEther(val)} ETH move detected${TXT.reset}`);
+                            await executeQuantumStrike(provider, wallet, titanIface, CHAIN);
+                        }
+                    } catch (e) { /* Silent capture */ }
+                });
             });
 
             setInterval(async () => {
                 try { await wsProvider.getBlockNumber(); } catch (e) { process.exit(1); }
-            }, 12000);
+            }, 10000);
 
         } catch (e) { setTimeout(connect, 5000); }
     }
     connect();
 }
 
-async function attemptStrike(provider, wallet, iface, oracle, CHAIN, mode) {
-    try {
-        const bal = await provider.getBalance(wallet.address);
-        const loanAmount = bal > parseEther("0.1") ? parseEther("100") : parseEther("25");
-        const data = iface.encodeFunctionData("requestTitanLoan", [GLOBAL_CONFIG.WETH, loanAmount, [GLOBAL_CONFIG.WETH, GLOBAL_CONFIG.USDC]]);
-        
-        await executeAIOptimizedStrike(provider, wallet, data, loanAmount, oracle, CHAIN, mode);
-    } catch (e) {}
+async function getSovereignState(provider, wallet) {
+    return new Promise(async (resolve) => {
+        const count = await provider.getTransactionCount(wallet.address, 'latest');
+        const listener = (msg) => {
+            if (msg.type === 'SYNC_GRANT') {
+                process.removeListener('message', listener);
+                resolve({ nonce: msg.nonce, block: msg.block });
+            }
+        };
+        process.on('message', listener);
+        process.send({ type: 'SYNC_RESERVE', nonce: count });
+    });
 }
 
-async function executeAIOptimizedStrike(provider, wallet, data, loanAmount, oracle, CHAIN, mode) {
+async function executeQuantumStrike(provider, wallet, iface, CHAIN) {
     const TAG = `${CHAIN.color}[${CHAIN.name}]${TXT.reset}`;
     try {
-        const [simulation, l1Fee, feeData, nonce, balance] = await Promise.all([
-            provider.call({ to: GLOBAL_CONFIG.TARGET_CONTRACT, data: data, from: wallet.address, gasLimit: 1300000n }).catch((e) => {
-                askAiForOptimization(`Simulation Reverted: ${e.message}`);
-                return null;
-            }),
-            oracle ? oracle.getL1Fee(data).catch(() => 0n) : 0n,
+        // --- 1. ATOMIC PRE-FLIGHT ---
+        const [feeData, balance, state] = await Promise.all([
             provider.getFeeData(),
-            provider.getTransactionCount(wallet.address, 'latest'),
-            provider.getBalance(wallet.address)
+            provider.getBalance(wallet.address),
+            getSovereignState(provider, wallet)
         ]);
+
+        const loanAmount = parseEther("25");
+        const tradeData = iface.encodeFunctionData("requestTitanLoan", [GLOBAL_CONFIG.WETH, loanAmount, [GLOBAL_CONFIG.WETH, GLOBAL_CONFIG.USDC]]);
+
+        // Simulation with AI-Triggered diagnostics
+        const simulation = await provider.call({ 
+            to: GLOBAL_CONFIG.TARGET_CONTRACT, 
+            data: tradeData, 
+            from: wallet.address, 
+            gasLimit: 1200000n,
+            maxFeePerGas: feeData.maxFeePerGas,
+            nonce: state.nonce
+        }).catch((e) => {
+            askAiForOptimization(`Simulation Revert: ${e.message}`);
+            return null;
+        });
 
         if (!simulation || simulation === "0x") return;
 
+        // --- 2. QUANTUM FEE MATH ---
         const baseGas = feeData.maxFeePerGas || feeData.gasPrice || parseEther("0.1", "gwei");
         const priority = (feeData.maxPriorityFeePerGas || 0n) * (100n + BigInt(GLOBAL_CONFIG.TUNABLES.PRIORITY_BRIBE)) / 100n;
-        const maxFee = baseGas + priority;
-        const gasRequirement = 1200000n * maxFee + l1Fee;
+        const maxFee = (baseGas + priority) * 175n / 100n; 
+        const gasLimit = 880000n;
+        const gasRequirement = gasLimit * maxFee;
 
         if (balance < gasRequirement) {
-            console.log(`${TAG} ${TXT.red}⚠️ GAS LOCK: Have ${formatEther(balance)} Need ${formatEther(gasRequirement)}${TXT.reset}`);
+            console.log(`\n${TAG} ${TXT.red}⚠️ GAS LOCK: Need ${formatEther(gasRequirement)} ETH${TXT.reset}`);
             return;
         }
 
         const rawProfit = BigInt(simulation);
-        const threshold = gasRequirement + parseEther(GLOBAL_CONFIG.TUNABLES.MARGIN_ETH.toString());
+        const totalCost = gasRequirement + (loanAmount * 5n / 10000n);
+        const minMargin = parseEther(GLOBAL_CONFIG.TUNABLES.MARGIN_ETH.toString());
 
-        if (rawProfit > threshold) {
-            console.log(`${TXT.green}${TXT.bold}💎 STRIKE [${mode}] Profit: ${formatEther(rawProfit - threshold)} ETH${TXT.reset}`);
+        // --- 3. ENTROPY SATURATION BLAST ---
+        if (rawProfit > (totalCost + minMargin)) {
+            console.log(`\n${TXT.green}${TXT.bold}💎 DISPATCHING STRIKE [AI-OPTIMIZED]${TXT.reset} | Profit: +${formatEther(rawProfit - totalCost)} ETH`);
 
             const tx = {
-                to: GLOBAL_CONFIG.TARGET_CONTRACT, data, type: 2, chainId: CHAIN.chainId,
-                maxFeePerGas: maxFee, maxPriorityFeePerGas: priority, gasLimit: 1200000n,
-                nonce, value: 0n
+                to: GLOBAL_CONFIG.TARGET_CONTRACT, data: tradeData, type: 2, chainId: CHAIN.chainId,
+                maxFeePerGas: maxFee, maxPriorityFeePerGas: priority, gasLimit,
+                nonce: state.nonce, value: 0n
             };
 
-            const signed = await wallet.signTransaction(tx);
-            // Nuclear Broadcast
-            wallet.sendTransaction(tx).catch(e => askAiForOptimization(e.message));
-            axios.post(CHAIN.rpc, { jsonrpc: "2.0", id: 1, method: "eth_sendRawTransaction", params: [signed] }, { timeout: 3000 }).catch(() => {});
+            const signedHex = await wallet.signTransaction(tx);
+            
+            // Native Broadcast
+            provider.broadcastTransaction(signedHex).then(res => {
+                console.log(`   ${TXT.cyan}🚀 INJECTION CONFIRMED: ${res.hash.substring(0,22)}...${TXT.reset}`);
+            }).catch(e => askAiForOptimization(`Broadcast Error: ${e.message}`));
+
+            // Multi-RPC Entropy Blast
+            const targets = [CHAIN.rpc, ...GLOBAL_CONFIG.RPC_POOL].filter(Boolean);
+            Promise.allSettled(targets.map(url => 
+                axios.post(url, { 
+                    jsonrpc: "2.0", id: Date.now() + Math.random(), method: "eth_sendRawTransaction", params: [signedHex] 
+                }, { timeout: 1200 })
+            ));
         }
     } catch (e) {
+        if (e.message.toLowerCase().includes("nonce")) {
+            process.send({ type: 'AI_RECALIBRATE', nonce: await provider.getTransactionCount(wallet.address, 'latest') });
+        }
         askAiForOptimization(e.message);
     }
 }
